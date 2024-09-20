@@ -10,14 +10,12 @@
 # header is assumed to be present and removed.
 # The output is written with the same basename. Assumes plink2 is installed.
 
-$EIDS = $(mktemp)
-cat $2 | cut -d, -f1 | tail -n +1 >$EIDS
-
+cat $2 | cut -d, -f1 | tail -n +2 >eids.tmp
 plink2 \
     --bgen $1.bgen ref-first \
     --sample $1.sample \
     --maf 0.01 \
     --keep $EIDS \
-    --indiv-sort file $EIDS \
+    --indiv-sort file eids.tmp \
     --make-pgen \
     --out $1
