@@ -15,7 +15,7 @@ plink2 \
     --bgen $1.bgen ref-first \
     --sample $1.sample \
     --maf 0.01 \
-    --keep $EIDS \
+    --keep eids.tmp \
     --indiv-sort file eids.tmp \
     --make-pgen \
     --out $1
