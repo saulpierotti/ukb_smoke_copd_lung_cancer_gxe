@@ -12,4 +12,4 @@ plink2 \
     --bgen $1.bgen ref-first \
     --sample $1.sample \
     --maf 0.01 \
-    --make-pgen $1
+    --make-pgen "$1"
