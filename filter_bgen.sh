@@ -17,5 +17,6 @@ plink2 \
     --maf 0.01 \
     --keep eids.tmp \
     --indiv-sort file eids.tmp \
-    --make-pgen \
+    --freq 'zs' \
+    --make-pgen 'vzs' \
     --out $1
