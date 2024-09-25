@@ -1,4 +1,4 @@
-# Phenotype-covariate table preparation
+# UK Biobank GxE
 
 This project explores GxE effects in the UK biobank.
 
