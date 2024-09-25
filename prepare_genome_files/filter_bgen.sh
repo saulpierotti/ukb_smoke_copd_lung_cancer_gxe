@@ -10,13 +10,12 @@
 # header is assumed to be present and removed.
 # The output is written with the same basename. Assumes plink2 is installed.
 
-cat $2 | cut -d, -f1 | tail -n +2 >eids.tmp
 plink2 \
     --bgen $1.bgen ref-first \
     --sample $1.sample \
     --maf 0.01 \
-    --keep eids.tmp \
-    --indiv-sort file eids.tmp \
+    --keep $2 \
+    --indiv-sort file $2 \
     --freq 'zs' \
     --make-pgen 'vzs' \
     --out $1
