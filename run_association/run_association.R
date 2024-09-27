@@ -1,3 +1,6 @@
+packages <- c("data.table", "pgenlibr")
+install.packages(setdiff(packages, rownames(installed.packages()))) 
+
 library("data.table")
 library("pgenlibr")
 
@@ -10,31 +13,29 @@ pvar <- pgenlibr::NewPvar(sprintf("%s.pvar.zst", pgen_basename))
 pgen <- pgenlibr::NewPgen(sprintf("%s.pgen", pgen_basename), pvar = pvar)
 psam <- fread(sprintf("%s.psam", pgen_basename))
 nvars <- pgenlibr::GetVariantCt(pgen)
-df[["g"]] <- pgenlibr::Buf(pgen)
-pc_names <- colnames(df)[grepl("^22009-0\\.", colnames(df))]
-PC <- df[, ..pc_names] |> as.matrix()
+pheno_cov[["g"]] <- pgenlibr::Buf(pgen)
+pc_names <- sprintf("pc%s", 1:10)
+PC <- pheno_cov[, ..pc_names] |> as.matrix()
 
 # output file
 outname <- sprintf("%s.tsv.gwas.gz", pgen_basename)
 out_con <- gzfile(outname, "w")
+header <- "var_id\tlrt_chisq_gxe\tlrt_df_gxe\tpval_gxe\tlrt_chisq_g\tlrt_df_g\tpval_g"
+writeLines(header, out_con)
 
+nvars <- 10
 pb <- txtProgressBar(1, nvars, style = 3)
 for (i in 1:nvars) {
   setTxtProgressBar(pb, i)
 
   # read genetic variant
-  pgenlibr::Read(pgen, df[["g"]], i)
+  pgenlibr::Read(pgen, pheno_cov[["g"]], i)
   var_id <- pgenlibr::GetVariantId(pvar, i)
-  var_info <- strsplit(var_id, '_')[[1]]
-  chr <- var_info[[1]]
-  pos <- var_info[[2]]
-  ref <- var_info[[3]]
-  alt <- var_info[[4]]
 
   # fit models
-  fit_g_e_gxe <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g + g:previous_or_current_smoker, data = df, family = "binomial")
-  fit_g_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g, data = df, family = "binomial")
-  fit_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker, data = df, family = "binomial")
+  fit_g_e_gxe <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g + g:previous_or_current_smoker, data = pheno_cov, family = "binomial")
+  fit_g_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g, data = pheno_cov, family = "binomial")
+  fit_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker, data = pheno_cov, family = "binomial")
 
   # log likelihoods
   ll_g_e_gxe <- logLik(fit_g_e_gxe)
@@ -59,12 +60,8 @@ for (i in 1:nvars) {
 
   # write line to output
   lineout <- sprintf(
-    "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s",
-    chr,
-    pos,
+    "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s",
     var_id,
-    ref,
-    alt,
     lrt_chisq_gxe,
     lrt_df_gxe,
     pval_gxe,
