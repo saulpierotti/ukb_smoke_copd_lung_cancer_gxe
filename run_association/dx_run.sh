@@ -5,16 +5,17 @@
 
 echo "Using ${1}"
 dx rm -a association/run_association.R
-dx upload run_association.R --destination  association/run_association.R
+dx upload run_association.R --destination association/run_association.R
 
 while read id; do
     echo "Submitting ${id}"
     dx run swiss-army-knife \
-        -icmd="Rscript run_association.R ${id} smoke_lung_cancer_copd_sample_list.txt" \
+        -icmd="Rscript run_association.R ${id} smoke_lung_cancer_copd_analysis_ready.csv" \
+        -iin="association/run_association.R" \
         -iin="pheno_cov/smoke_lung_cancer_copd_analysis_ready.csv" \
-        -iin="genotypes/${id}.psam" \
-        -iin="genotypes/${id}.pvar.zst" \
-        -iin="genotypes/${id}.pgen" \
+        -iin="genotypes/${id}/${id}.psam" \
+        -iin="genotypes/${id}/${id}.pvar.zst" \
+        -iin="genotypes/${id}/${id}.pgen" \
         --name "${id}" \
         --destination "association/${id}" \
         --instance-type mem1_ssd2_v2_x2
