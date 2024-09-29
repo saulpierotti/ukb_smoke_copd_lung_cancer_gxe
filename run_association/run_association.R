@@ -20,13 +20,17 @@ PC <- pheno_cov[, ..pc_names] |> as.matrix()
 # output file
 outname <- sprintf("%s.tsv.gwas.gz", pgen_basename)
 out_con <- gzfile(outname, "w")
-header <- "var_id\tlrt_chisq_gxe\tlrt_df_gxe\tpval_gxe\tlrt_chisq_g\tlrt_df_g\tpval_g"
+header <- "var_id\tlrt_chisq_gxe\tlrt_df_gxe\tpval_lrt_gxe\tpval_wald_gxe\tlrt_chisq_g\tlrt_df_g\tpval_lrt_g\tpval_wald_g"
 writeLines(header, out_con)
 
-nvars <- 10
-pb <- txtProgressBar(1, nvars, style = 3)
+# the E fit does not depend on G  
+fit_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker, data = pheno_cov, family = "binomial")
+ll_e <- logLik(fit_e)
+
 for (i in 1:nvars) {
-  setTxtProgressBar(pb, i)
+  if ((i %% 1000) == 0){
+    message(sprintf("%s of %s", i, nvars))
+  }
 
   # read genetic variant
   pgenlibr::Read(pgen, pheno_cov[["g"]], i)
@@ -35,12 +39,10 @@ for (i in 1:nvars) {
   # fit models
   fit_g_e_gxe <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g + g:previous_or_current_smoker, data = pheno_cov, family = "binomial")
   fit_g_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker + g, data = pheno_cov, family = "binomial")
-  fit_e <- glm(lung_cancer ~ age + bmi + PC + previous_or_current_smoker, data = pheno_cov, family = "binomial")
 
   # log likelihoods
   ll_g_e_gxe <- logLik(fit_g_e_gxe)
   ll_g_e <- logLik(fit_g_e)
-  ll_e <- logLik(fit_e)
 
   # likelihood ratio test - degrees of freedom
   lrt_df_gxe <- attributes(ll_g_e_gxe)[["df"]] - attributes(ll_g_e)[["df"]]
@@ -51,23 +53,35 @@ for (i in 1:nvars) {
   lrt_chisq_g <- 2 * as.numeric(ll_g_e - ll_e)
 
   # p-values
-  pval_gxe <- (
+  pval_lrt_gxe <- (
       if (lrt_df_gxe > 0) pchisq(lrt_chisq_gxe, df = lrt_df_gxe, lower.tail = FALSE) else NA
   )
-  pval_g <- (
+  pval_lrt_g <- (
       if (lrt_df_g > 0) pchisq(lrt_chisq_g, df = lrt_df_g, lower.tail = FALSE) else NA
   )
 
+  # wald tests
+  coef_g_e <- fit_g_e |> summary() |> coef()
+  pval_wald_g <- coef_g_e["g", "Pr(>|z|)"]
+
+  coef_g_e_gxe <- fit_g_e_gxe |> summary() |> coef()
+  pval_wald_gxe <- coef_g_e_gxe["previous_or_current_smokerTRUE:g", "Pr(>|z|)"]
+
   # write line to output
   lineout <- sprintf(
-    "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s",
+    "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
     var_id,
     lrt_chisq_gxe,
     lrt_df_gxe,
-    pval_gxe,
+    pval_lrt_gxe,
+    pval_wald_gxe,
     lrt_chisq_g,
     lrt_df_g,
-    pval_g
+    pval_lrt_g,
+    pval_wald_g
   )
   writeLines(lineout, out_con)
 }
+
+pgenlibr::ClosePgen(pgen)
+close(out_con)
