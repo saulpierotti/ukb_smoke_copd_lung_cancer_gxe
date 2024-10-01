@@ -38,7 +38,7 @@ process filter_bgen {
         plink2 \\
             --bgen ${meta.id}.bgen ref-first \\
             --sample ${meta.id}.sample \\
-            --maf 0.01 \\
+            --maf ${params.maf_filter} \\
             --keep ${pheno_cov_samples} \\
             --indiv-sort file ${pheno_cov_samples} \\
             --freq 'zs' \\
