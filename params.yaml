@@ -1,0 +1,5 @@
+input: "${projectDir}/samplesheet.csv"
+pheno_cov: "project-Gqf2V3QJkv4y5PQ0vgvv7521:/pheno_cov/smoke_lung_cancer_copd_analysis_ready.csv"
+pheno_cov_id_list: "project-Gqf2V3QJkv4y5PQ0vgvv7521:/pheno_cov/smoke_lung_cancer_copd_sample_list.txt"
+outdir: "nextflow_outdir"
+chunk_nvars: 10000
