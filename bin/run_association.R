@@ -21,7 +21,7 @@ pgen <- pgenlibr::NewPgen(sprintf("%s.pgen", pgen_basename), pvar = pvar)
 psam <- fread(sprintf("%s.psam", pgen_basename))
 pheno_cov[["g"]] <- pgenlibr::Buf(pgen)
 pc_names <- sprintf("pc%s", 1:10)
-PC <- pheno_cov[, ..pc_names] |> as.matrix()
+PC <- pheno_cov[, pc_names] |> as.matrix()
 
 # output file
 outname <- sprintf("%s.tsv.gwas.gz", pgen_basename)
