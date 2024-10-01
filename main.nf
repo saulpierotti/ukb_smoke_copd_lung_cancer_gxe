@@ -64,7 +64,7 @@ process run_association {
     output:
         tuple(
             val(meta),
-            path("${meta.id}.tsv.gwas.gz"
+            path("${meta.id}.tsv.gwas.gz")
         )
     
     script:
