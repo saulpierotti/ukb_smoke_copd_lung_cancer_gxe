@@ -80,9 +80,8 @@ workflow {
     .map { [ [ id: it.id, chr: it.id ], it.bgen, it.bgi, it.sample ] }
     .combine ( [ params.pheno_cov_id_list ] )
     .filter { it[0].id == "ukb22828_c1_b0_v3" }
-    .view()
     .set { filter_bgen_ch }
-    //filter_bgen ( filter_bgen_ch )
+    filter_bgen ( filter_bgen_ch )
 
     //filter_bgen.out
     //.map {
