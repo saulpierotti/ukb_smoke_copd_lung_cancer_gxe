@@ -8,14 +8,12 @@ pheno_cov_file <- args[[2]]
 var_range_low <- as.numeric(args[[3]])
 var_range_high <- as.numeric(args[[4]])
 
-pheno_cov <- fread(pheno_cov_file)
-read.table(
-        pheno_cov_file,
-        sep = "\\t",
-        header = TRUE,
-        comment.char = "",
-        check.names = FALSE
-    )
+pheno_cov <- read.table(
+    pheno_cov_file,
+    sep = ",",
+    header = TRUE,
+    check.names = FALSE
+)
 pvar <- pgenlibr::NewPvar(sprintf("%s.pvar.zst", pgen_basename))
 pgen <- pgenlibr::NewPgen(sprintf("%s.pgen", pgen_basename), pvar = pvar)
 psam <- fread(sprintf("%s.psam", pgen_basename))
